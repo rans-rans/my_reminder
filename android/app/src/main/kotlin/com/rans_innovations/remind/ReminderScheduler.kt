@@ -18,9 +18,10 @@ class ReminderScheduler(private val context: Context) {
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             setAction("SET_ALARM_NOTIFICATION")
+            putExtra("EXTRA_DESCRIPTION", reminder.description)
+            putExtra("EXTRA_ID", reminder.id)
             putExtra("EXTRA_REMINDER_DAYS", reminder.selectedDays)
             putExtra("EXTRA_TITLE", reminder.title)
-            putExtra("EXTRA_CONTENT", reminder.description)
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,

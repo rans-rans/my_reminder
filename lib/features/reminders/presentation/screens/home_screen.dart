@@ -22,7 +22,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     },
     {
       "icon": const Icon(Icons.task),
-      "label": "Task",
+      "label": "Reminders",
     },
     {
       "icon": const Icon(Icons.timer),
