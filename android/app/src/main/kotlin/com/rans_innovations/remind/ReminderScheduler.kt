@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
+import kotlin.math.abs
 
 class ReminderScheduler(private val context: Context) {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
@@ -23,9 +24,10 @@ class ReminderScheduler(private val context: Context) {
             putExtra("EXTRA_REMINDER_DAYS", reminder.selectedDays)
             putExtra("EXTRA_TITLE", reminder.title)
         }
+
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            reminder.id.hashCode(),
+            abs(reminder.id.hashCode()),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
@@ -47,6 +49,7 @@ class ReminderScheduler(private val context: Context) {
         }
 
         if (selectedDays.isNotEmpty()) {
+            //TODO there is still a one minute delay
             alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP, setTime, AlarmManager.INTERVAL_DAY, pendingIntent
             )
@@ -63,7 +66,7 @@ class ReminderScheduler(private val context: Context) {
         alarmManager.cancel(
             PendingIntent.getBroadcast(
                 context,
-                alarmId.hashCode(),
+                abs(alarmId.hashCode()),
                 Intent(context, AlarmReceiver::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )

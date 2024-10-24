@@ -36,7 +36,6 @@ class AlarmReceiver : BroadcastReceiver() {
                     val mappedDays = days.map { mapToDay(it) }
                     val today = LocalDateTime.now().dayOfWeek
                     val isContained = mappedDays.find { it.value == today.value }
-
                     if (isContained != null) {
                         NotificationHelper(ctx).showNotification(title, content)
                     }

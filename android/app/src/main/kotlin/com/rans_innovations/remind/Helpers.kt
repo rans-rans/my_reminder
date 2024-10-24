@@ -4,41 +4,62 @@ import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
-import kotlin.math.abs
 
-fun findDifferenceBetweenNextOccurrence(days: List<DayOfWeek>, hour: Int, minute: Int): Long {
-    val setTime = LocalTime.of(hour, minute)
+fun findDifferenceBetweenNextOccurrence(
+    allowedDays: List<DayOfWeek>,
+    hour: Int,
+    minute: Int
+): Long {
+    val targetTime = LocalTime.of(hour, minute)
+
+    // Get current system time
     val currentDateTime = LocalDateTime.now()
+
+    // Get current day and time
+    val currentDay = currentDateTime.dayOfWeek
     val currentTime = currentDateTime.toLocalTime()
-    val currentDayOfWeek = LocalDateTime.now().dayOfWeek
 
-    val todayIsInList = days.find {
-        it.value == currentDayOfWeek.value
-    } == null
-    val timeHasNotPast = setTime.isAfter(currentTime)
-
-    if (todayIsInList && timeHasNotPast) {
-        return ChronoUnit.MILLIS.between(currentTime, setTime)
+    // Check if current day is in allowed days
+    if (currentDay in allowedDays) {
+        // If current time is before target time on the same day
+        if (currentTime.isBefore(targetTime)) {
+            return ChronoUnit.MILLIS.between(
+                currentDateTime,
+                currentDateTime.with(targetTime)
+            )
+        }
     }
 
-    val nextDay = days.firstOrNull { it.value > currentDayOfWeek.value } ?: days.first()
+    // Find next allowed day
+    var nextDay = allowedDays.find { it > currentDay }
 
-    val daysUntilNext = if (nextDay.value > currentDayOfWeek.value) {
-        nextDay.value - currentDayOfWeek.value
-    } else {
-        7 - currentDayOfWeek.value + nextDay.value
+    // If no next day found in current week, take first day from next week
+    if (nextDay == null) {
+        nextDay = allowedDays.first()
+        // Calculate days until next occurrence
+        val daysUntilNext = 7 - currentDay.value + nextDay.value
+
+        val nextDateTime = currentDateTime
+            .plusDays(daysUntilNext.toLong())
+            .with(targetTime)
+
+        return ChronoUnit.MILLIS.between(currentDateTime, nextDateTime)
     }
 
-    val targetDateTime = currentDateTime.plusDays(daysUntilNext.toLong()).with(setTime)
-    val duration = ChronoUnit.MILLIS.between(currentDateTime, targetDateTime)
+    // Calculate days until next allowed day in current week
+    val daysUntilNext = nextDay.value - currentDay.value
 
-    return abs(duration)
+    val nextDateTime = currentDateTime
+        .plusDays(daysUntilNext.toLong())
+        .with(targetTime)
+
+    return ChronoUnit.MILLIS.between(currentDateTime, nextDateTime)
 }
 
 fun mapToDay(day: String): DayOfWeek {
-    val correctedDay=day.substring(1,day.length-1)
-    return DayOfWeek.values().firstOrNull{
-        it.name.lowercase().trim() ==correctedDay
+    val correctedDay = day.substring(1, day.length - 1)
+    return DayOfWeek.values().firstOrNull {
+        it.name.lowercase().trim() == correctedDay
     } ?: DayOfWeek.SUNDAY
 }
 
