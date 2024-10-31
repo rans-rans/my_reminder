@@ -23,14 +23,14 @@ class Reminder(
             )
         }
     }
-//    fun toMap(): Map<*, *> {
-//        return mapOf(
-//            "id" to id,
-//            "title" to title,
-//            "date" to date,
-//            "description" to description,
-//            "timeOfDay" to timeOfDay,
-//            "selectedDays" to selectedDays
-//        )
-//    }
+    fun toMap(): Map<*, *> {
+        return mapOf(
+            "id" to id,
+            "title" to title,
+            "date" to date,
+            "description" to description,
+            "timeOfDay" to timeOfDay,
+            "selectedDays" to selectedDays
+        )
+    }
 }

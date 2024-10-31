@@ -3,57 +3,39 @@ package com.rans_innovations.remind
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-fun findDifferenceBetweenNextOccurrence(
-    allowedDays: List<DayOfWeek>,
-    hour: Int,
-    minute: Int
-): Long {
-    val targetTime = LocalTime.of(hour, minute)
 
-    // Get current system time
-    val currentDateTime = LocalDateTime.now()
+fun findInitialDelay(reminder: Reminder): Long {
+    val timeData = parseJsonMap(reminder.timeOfDay)
+    val targetTime = LocalTime.of(timeData["hour"] as Int, timeData["minute"] as Int)
+    val targetDate = LocalDateTime.parse(reminder.date, DateTimeFormatter.ISO_DATE_TIME)!!
 
-    // Get current day and time
-    val currentDay = currentDateTime.dayOfWeek
-    val currentTime = currentDateTime.toLocalTime()
+    val nowDateTime = LocalDateTime.now()
+    val selectedDays = parseJsonList(reminder.selectedDays).map {
+        mapToDay(it)
+    }.sorted()
 
-    // Check if current day is in allowed days
-    if (currentDay in allowedDays) {
-        // If current time is before target time on the same day
-        if (currentTime.isBefore(targetTime)) {
-            return ChronoUnit.MILLIS.between(
-                currentDateTime,
-                currentDateTime.with(targetTime)
-            )
-        }
+    val targetDay = if (selectedDays.isEmpty()) {
+        targetDate.dayOfWeek!!
+    } else {
+        if ((nowDateTime.dayOfWeek == DayOfWeek.SUNDAY) && !selectedDays.contains(DayOfWeek.SUNDAY)) {
+            DayOfWeek.MONDAY
+        } else selectedDays.first { it.value >= nowDateTime.dayOfWeek.value }
     }
+    println(targetDay)
 
-    // Find next allowed day
-    var nextDay = allowedDays.find { it > currentDay }
+    var daysUntilTarget = targetDay.value - nowDateTime.dayOfWeek.value
 
-    // If no next day found in current week, take first day from next week
-    if (nextDay == null) {
-        nextDay = allowedDays.first()
-        // Calculate days until next occurrence
-        val daysUntilNext = 7 - currentDay.value + nextDay.value
+    if (daysUntilTarget < 0 ||
+        (daysUntilTarget == 0 && nowDateTime.toLocalTime().isAfter(targetTime))
+    ) daysUntilTarget += 7
 
-        val nextDateTime = currentDateTime
-            .plusDays(daysUntilNext.toLong())
-            .with(targetTime)
+    val targetDateTime =
+        nowDateTime.toLocalDate().plusDays(daysUntilTarget.toLong()).atTime(targetTime)
+    return ChronoUnit.MILLIS.between(nowDateTime, targetDateTime)
 
-        return ChronoUnit.MILLIS.between(currentDateTime, nextDateTime)
-    }
-
-    // Calculate days until next allowed day in current week
-    val daysUntilNext = nextDay.value - currentDay.value
-
-    val nextDateTime = currentDateTime
-        .plusDays(daysUntilNext.toLong())
-        .with(targetTime)
-
-    return ChronoUnit.MILLIS.between(currentDateTime, nextDateTime)
 }
 
 fun mapToDay(day: String): DayOfWeek {
@@ -63,6 +45,19 @@ fun mapToDay(day: String): DayOfWeek {
     } ?: DayOfWeek.SUNDAY
 }
 
+fun mapToJson(map: Map<*, *>): String {
+    return map.entries.joinToString(
+        prefix = "{",
+        postfix = "}",
+        separator = ","
+    ) { (key, value) ->
+        val formattedValue = when (value) {
+            is String -> "\"$value\""
+            else -> value.toString()
+        }
+        "\"$key\":$formattedValue"
+    }
+}
 
 fun parseJsonList(jsonString: String): List<String> {
     val trimmed = jsonString.trim()
@@ -79,7 +74,6 @@ fun parseJsonList(jsonString: String): List<String> {
         }
     }
 }
-
 
 fun parseJsonMap(jsonString: String): Map<String, Any> {
     val trimmed = jsonString.trim()

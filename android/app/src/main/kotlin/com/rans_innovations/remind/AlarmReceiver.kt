@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -21,24 +22,32 @@ class AlarmReceiver : BroadcastReceiver() {
             }
 
             "SET_ALARM_NOTIFICATION" -> {
-                val title = intent.getStringExtra("EXTRA_TITLE") ?: "Forgetting something?"
-                val id = intent.getStringExtra("EXTRA_ID") ?: ""
-                val content =
-                    intent.getStringExtra("EXTRA_DESCRIPTION") ?: "Look sharp. You have a reminder"
-                val days = parseJsonList(intent.getStringExtra("EXTRA_REMINDER_DAYS") ?: "[]")
+                val reminderData = parseJsonMap(intent.getStringExtra("EXTRA_REMINDER") ?: "")
+                val reminder = Reminder.fromMap(reminderData)
+                val days = parseJsonList(reminder.selectedDays).map {
+                    mapToDay(it)
+                }
+
                 context?.also { ctx ->
+                    println("action -> ${LocalTime.now()}")
                     if (days.isEmpty()) {
-                        NotificationHelper(ctx).showNotification(title, content)
+                        NotificationHelper(ctx).showNotification(
+                            reminder.title,
+                            reminder.description
+                        )
                         //if it is a one time reminder, delete from the database after completing
-                        SQLiteHelper(ctx).deleteReminder(id)
+                        SQLiteHelper(ctx).deleteReminder(reminder.id)
                         return
                     }
-                    val mappedDays = days.map { mapToDay(it) }
                     val today = LocalDateTime.now().dayOfWeek
-                    val isContained = mappedDays.find { it.value == today.value }
+                    val isContained = days.find { it.value == today.value }
                     if (isContained != null) {
-                        NotificationHelper(ctx).showNotification(title, content)
+                        NotificationHelper(ctx).showNotification(
+                            reminder.title,
+                            reminder.description
+                        )
                     }
+                    ReminderScheduler(ctx).scheduleReminder(reminder)
                 }
             }
 
