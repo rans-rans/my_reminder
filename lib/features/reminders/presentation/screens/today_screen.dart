@@ -16,56 +16,67 @@ class TodayScreen extends ConsumerWidget {
     return reminderProv.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => const Center(child: Text("Error occurred")),
-      data: (reminders) => Column(
-        children: [
-          SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.3,
-            child: CalendarDatePicker(
-              initialDate: DateTime.now(),
-              firstDate: DateTime.now(),
-              currentDate: DateTime.now(),
-              lastDate: DateTime(2099),
-              onDateChanged: (date) {
-                selectedDate.value = date;
-              },
-            ),
+      data: (reminders) => switch (MediaQuery.sizeOf(context).height <= 445) {
+        true => CalendarDatePicker(
+            initialDate: DateTime.now(),
+            firstDate: DateTime.now(),
+            currentDate: DateTime.now(),
+            lastDate: DateTime(2099),
+            onDateChanged: (date) {
+              selectedDate.value = date;
+            },
           ),
-          ValueListenableBuilder(
-            valueListenable: selectedDate,
-            builder: (context, thisDate, child) {
-              final selectedReminders = ReminderHelpers.getDateReminders(
-                selectedDate.value,
-                reminders,
-              );
+        false => Column(
+            children: [
+              SizedBox(
+                height: MediaQuery.sizeOf(context).height * 0.3,
+                child: CalendarDatePicker(
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now(),
+                  currentDate: DateTime.now(),
+                  lastDate: DateTime(2099),
+                  onDateChanged: (date) {
+                    selectedDate.value = date;
+                  },
+                ),
+              ),
+              ValueListenableBuilder(
+                valueListenable: selectedDate,
+                builder: (context, thisDate, child) {
+                  final selectedReminders = ReminderHelpers.getDateReminders(
+                    selectedDate.value,
+                    reminders,
+                  );
 
-              return Expanded(
-                child: switch (selectedReminders.isEmpty) {
-                  true => Center(
-                      child: Text(
-                        "No reminders for ${DateTimeHelpers.getFormattedDate(selectedDate.value)}",
-                      ),
-                    ),
-                  false => ListView.builder(
-                      itemCount: selectedReminders.length,
-                      itemBuilder: (ctx, index) {
-                        final reminder = selectedReminders[index];
-                        return ListTile(
-                          title: Text(reminder.title),
-                          onTap: () {
-                            context.push(
-                              NewReminderScreen.path,
-                              extra: reminder,
+                  return Expanded(
+                    child: switch (selectedReminders.isEmpty) {
+                      true => Center(
+                          child: Text(
+                            "No reminders for ${DateTimeHelpers.getFormattedDate(selectedDate.value)}",
+                          ),
+                        ),
+                      false => ListView.builder(
+                          itemCount: selectedReminders.length,
+                          itemBuilder: (ctx, index) {
+                            final reminder = selectedReminders[index];
+                            return ListTile(
+                              title: Text(reminder.title),
+                              onTap: () {
+                                context.push(
+                                  NewReminderScreen.path,
+                                  extra: reminder,
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    )
+                        )
+                    },
+                  );
                 },
-              );
-            },
-          )
-        ],
-      ),
+              )
+            ],
+          ),
+      },
     );
   }
 }
