@@ -15,7 +15,6 @@ class ReminderScheduler(private val context: Context) {
             setAction("SET_ALARM_NOTIFICATION")
             putExtra("EXTRA_REMINDER", mapToJson(reminder.toMap()))
         }
-
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             reminder.id.hashCode(),

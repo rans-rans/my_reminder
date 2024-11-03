@@ -13,16 +13,13 @@ fun findInitialDelay(reminder: Reminder): Long {
     val targetDate = LocalDateTime.parse(reminder.date, DateTimeFormatter.ISO_DATE_TIME)!!
 
     val nowDateTime = LocalDateTime.now()
-    val selectedDays = parseJsonList(reminder.selectedDays).map {
-        mapToDay(it)
-    }.sorted()
 
-    val targetDay = if (selectedDays.isEmpty()) {
+    val targetDay = if (reminder.selectedDays.isEmpty()) {
         targetDate.dayOfWeek!!
     } else {
-        if ((nowDateTime.dayOfWeek == DayOfWeek.SUNDAY) && !selectedDays.contains(DayOfWeek.SUNDAY)) {
+        if ((nowDateTime.dayOfWeek == DayOfWeek.SUNDAY) && !reminder.selectedDays.contains(DayOfWeek.SUNDAY)) {
             DayOfWeek.MONDAY
-        } else selectedDays.first { it.value >= nowDateTime.dayOfWeek.value }
+        } else reminder.selectedDays.first { it.value >= nowDateTime.dayOfWeek.value }
     }
 
     var daysUntilTarget = targetDay.value - nowDateTime.dayOfWeek.value
@@ -34,14 +31,6 @@ fun findInitialDelay(reminder: Reminder): Long {
     val targetDateTime =
         nowDateTime.toLocalDate().plusDays(daysUntilTarget.toLong()).atTime(targetTime)
     return ChronoUnit.MILLIS.between(nowDateTime, targetDateTime)
-
-}
-
-fun mapToDay(day: String): DayOfWeek {
-    val correctedDay = day.substring(1, day.length - 1)
-    return DayOfWeek.values().firstOrNull {
-        it.name.lowercase().trim() == correctedDay
-    } ?: DayOfWeek.SUNDAY
 }
 
 fun mapToJson(map: Map<*, *>): String {
@@ -56,6 +45,27 @@ fun mapToJson(map: Map<*, *>): String {
         }
         "\"$key\":$formattedValue"
     }
+}
+
+fun mapSelectedDaysToString(selectedDays: List<DayOfWeek>): String {
+    val mappedDays = selectedDays.map {
+        when (it) {
+            DayOfWeek.MONDAY -> "monday"
+            DayOfWeek.TUESDAY -> "tuesday"
+            DayOfWeek.WEDNESDAY -> "wednesday"
+            DayOfWeek.THURSDAY -> "thursday"
+            DayOfWeek.FRIDAY -> "friday"
+            DayOfWeek.SATURDAY -> "saturday"
+            DayOfWeek.SUNDAY -> "sunday"
+
+        }
+    }
+    return mappedDays
+        .joinToString(
+            prefix = "[",
+            postfix = "]",
+            separator = ","
+        ) { "\"$it\"" }
 }
 
 fun parseJsonList(jsonString: String): List<String> {

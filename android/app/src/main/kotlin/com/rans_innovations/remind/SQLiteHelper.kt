@@ -5,7 +5,8 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class SQLiteHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class SQLiteHelper(context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "reminders.db"
@@ -48,7 +49,7 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             put(COLUMN_DESCRIPTION, reminder.description)
             put(COLUMN_DATE, reminder.date)
             put(COLUMN_TIME_OF_DAY, reminder.timeOfDay)
-            put(COLUMN_SELECTED_DAYS, reminder.selectedDays)
+            put(COLUMN_SELECTED_DAYS, mapSelectedDaysToString(reminder.selectedDays))
         }
         return db.insert(TABLE_REMINDERS, null, values)
     }
@@ -101,7 +102,7 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             put(COLUMN_DESCRIPTION, reminder.description)
             put(COLUMN_DATE, reminder.date)
             put(COLUMN_TIME_OF_DAY, reminder.timeOfDay)
-            put(COLUMN_SELECTED_DAYS, reminder.selectedDays)
+            put(COLUMN_SELECTED_DAYS, mapSelectedDaysToString(reminder.selectedDays))
         }
         return db.update(TABLE_REMINDERS, values, "$COLUMN_ID = ?", arrayOf(reminder.id))
     }

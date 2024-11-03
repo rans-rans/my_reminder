@@ -19,7 +19,7 @@ class _ReminderTileState extends ConsumerState<ReminderTile> {
   @override
   void initState() {
     super.initState();
-    widgetKey = GlobalObjectKey(widget.reminder.id);
+    widgetKey = GlobalKey();
   }
 
   RelativeRect get _getWidgetPosition {

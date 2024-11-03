@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -24,12 +23,9 @@ class AlarmReceiver : BroadcastReceiver() {
             "SET_ALARM_NOTIFICATION" -> {
                 val reminderData = parseJsonMap(intent.getStringExtra("EXTRA_REMINDER") ?: "")
                 val reminder = Reminder.fromMap(reminderData)
-                val days = parseJsonList(reminder.selectedDays).map {
-                    mapToDay(it)
-                }
 
                 context?.also { ctx ->
-                    if (days.isEmpty()) {
+                    if (reminder.selectedDays.isEmpty()) {
                         NotificationHelper(ctx).showNotification(
                             reminder.title,
                             reminder.description
@@ -39,7 +35,7 @@ class AlarmReceiver : BroadcastReceiver() {
                         return
                     }
                     val today = LocalDateTime.now().dayOfWeek
-                    val isContained = days.find { it.value == today.value }
+                    val isContained = reminder.selectedDays.find { it.value == today.value }
                     if (isContained != null) {
                         NotificationHelper(ctx).showNotification(
                             reminder.title,
