@@ -29,7 +29,6 @@ class AlarmReceiver : BroadcastReceiver() {
                 }
 
                 context?.also { ctx ->
-                    println("action -> ${LocalTime.now()}")
                     if (days.isEmpty()) {
                         NotificationHelper(ctx).showNotification(
                             reminder.title,

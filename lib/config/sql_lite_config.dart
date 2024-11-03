@@ -5,7 +5,7 @@ class SqlLiteConfig {
   // CRUD operations: Create, Read, Update, Delete
   Future<void> deleteReminder(String id) async {
     try {
-      await methodChannel.invokeMethod('delete-reminder', {'id': id});
+      await methodChannel.invokeMethod('delete-reminder', id);
     } on PlatformException {
       rethrow;
     }

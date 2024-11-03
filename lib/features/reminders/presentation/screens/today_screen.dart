@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:remind/features/reminders/presentation/screens/new_reminder_screen.dart';
 import 'package:remind/features/reminders/presentation/state/reminder_provider.dart';
+import 'package:remind/features/reminders/presentation/widgets/reminder_tile.dart';
 import 'package:remind/utils/helpers/date_time_helpers.dart';
 import 'package:remind/utils/helpers/reminder_helpers.dart';
 
@@ -59,15 +58,7 @@ class TodayScreen extends ConsumerWidget {
                           itemCount: selectedReminders.length,
                           itemBuilder: (ctx, index) {
                             final reminder = selectedReminders[index];
-                            return ListTile(
-                              title: Text(reminder.title),
-                              onTap: () {
-                                context.push(
-                                  NewReminderScreen.path,
-                                  extra: reminder,
-                                );
-                              },
-                            );
+                            return ReminderTile(reminder: reminder);
                           },
                         )
                     },

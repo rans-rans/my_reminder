@@ -24,7 +24,6 @@ fun findInitialDelay(reminder: Reminder): Long {
             DayOfWeek.MONDAY
         } else selectedDays.first { it.value >= nowDateTime.dayOfWeek.value }
     }
-    println(targetDay)
 
     var daysUntilTarget = targetDay.value - nowDateTime.dayOfWeek.value
 
